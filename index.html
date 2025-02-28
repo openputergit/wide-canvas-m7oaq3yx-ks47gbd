@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Question Generator</title>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            min-height: 100vh;
+        }
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-xl p-6 mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-white text-center mb-4">AI Question Generator</h1>
+            <p class="text-white/90 text-center">Generate exam questions instantly with AI assistance</p>
+        </div>
+
+        <!-- Main Form -->
+        <div class="glass rounded-xl p-6 mb-8">
+            <form id="questionForm" class="space-y-6">
+                <div>
+                    <label class="block text-white mb-2">Subject/Topic</label>
+                    <input type="text" id="topic" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                </div>
+                <div>
+                    <label class="block text-white mb-2">Difficulty Level</label>
+                    <select id="difficulty" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white mb-2">Number of Questions</label>
+                    <input type="number" id="questionCount" min="1" max="20" value="5" class="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/50" required>
+                </div>
+                <button type="submit" class="w-full py-3 px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold transition-all">
+                    Generate Questions
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden glass rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-center">
+                <div class="loading">
+                    <i class="bi bi-gear-wide-connected text-4xl text-white animate-spin"></i>
+                </div>
+                <span class="ml-3 text-white">Generating questions...</span>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden glass rounded-xl p-6">
+            <h2 class="text-2xl font-bold text-white mb-4">Generated Questions</h2>
+            <div id="questionList" class="space-y-4"></div>
+            <button onclick="downloadQuestions()" class="mt-6 py-3 px-6 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold transition-all">
+                <i class="bi bi-download mr-2"></i>Download Questions
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questionTemplates = {
+            easy: [
+                "What is the definition of {topic}?",
+                "List three main characteristics of {topic}.",
+                "Explain the basic concept of {topic}.",
+                "What are the primary uses of {topic}?",
+                "Identify the main components of {topic}."
+            ],
+            medium: [
+                "Compare and contrast two aspects of {topic}.",
+                "How does {topic} relate to real-world applications?",
+                "Analyze the importance of {topic} in its field.",
+                "What are the advantages and disadvantages of {topic}?",
+                "Explain how {topic} has evolved over time."
+            ],
+            hard: [
+                "Critically evaluate the impact of {topic} on modern society.",
+                "Propose a solution to a complex problem involving {topic}.",
+                "What are the theoretical limitations of {topic}?",
+                "Develop a comprehensive framework for understanding {topic}.",
+                "How might {topic} change in the next decade?"
+            ]
+        };
+
+        document.getElementById('questionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const topic = document.getElementById('topic').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const count = parseInt(document.getElementById('questionCount').value);
+
+            // Show loading state
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+
+            // Simulate AI processing time
+            setTimeout(() => generateQuestions(topic, difficulty, count), 2000);
+        });
+
+        function generateQuestions(topic, difficulty, count) {
+            const templates = questionTemplates[difficulty];
+            const questions = [];
+            
+            for (let i = 0; i < count; i++) {
+                const template = templates[Math.floor(Math.random() * templates.length)];
+                questions.push(template.replace('{topic}', topic));
+            }
+
+            displayQuestions(questions);
+        }
+
+        function displayQuestions(questions) {
+            const questionList = document.getElementById('questionList');
+            questionList.innerHTML = '';
+
+            questions.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'p-4 rounded-lg bg-white/10 text-white';
+                questionElement.innerHTML = `
+                    <span class="font-bold">Q${index + 1}:</span> ${question}
+                `;
+                questionList.appendChild(questionElement);
+            });
+
+            // Hide loading, show results
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        function downloadQuestions() {
+            const questions = Array.from(document.getElementById('questionList').children)
+                .map((el, index) => `Question ${index + 1}: ${el.textContent.trim()}`)
+                .join('\n\n');
+
+            const blob = new Blob([questions], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated-questions.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
